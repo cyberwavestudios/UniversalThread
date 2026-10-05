@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cosmic Harmony Visualization</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: #000000;
+            background: radial-gradient(circle at center, #0a0015 0%, #000000 100%);
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            color: #ffffff;
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        /* Deployment-specific background reinforcement */
+        html {
+            background: #000000 !important;
+            background: radial-gradient(circle at center, #0a0015 0%, #000000 100%) !important;
+        }
+
+        #container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #canvas {
+            background: transparent;
+            touch-action: none;
+        }
+        
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: calc(100vw - 20px);
+            font-size: 11px;
+        }
+        
+        #info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 10px;
+        }
+        
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            #controls {
+                font-size: 10px;
+                padding: 6px;
+            }
+            
+            #info {
+                font-size: 9px;
+                padding: 6px;
+            }
+            
+            .control-group {
+                margin-bottom: 8px;
+            }
+        }
+        
+        .control-group {
+            margin-bottom: 8px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .control-group label {
+            margin-bottom: 3px;
+            color: #cccccc;
+            font-size: 10px;
+        }
+        
+        input[type="range"] {
+            width: 120px;
+            margin-bottom: 3px;
+            height: 20px;
+        }
+        
+        button {
+            background: rgba(138, 43, 226, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 2px;
+            font-size: 10px;
+            min-height: 28px;
+            touch-action: manipulation;
+        }
+        
+        button:hover, button:active {
+            background: rgba(138, 43, 226, 1);
+        }
+        
+        .button-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        
+        .sphere-info {
+            color: #00ffff;
+            font-weight: bold;
+        }
+        
+        .harmonic-info {
+            color: #ffff00;
+            font-style: italic;
+        }
+        
+        .expansion-info {
+            color: #ff69b4;
+            font-weight: bold;
+        }
+        
+        #stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <canvas id="stars"></canvas>
+        <canvas id="canvas"></canvas>
+
+        <div id="controls">
+            <div class="control-group">
+                <label>Time Scale:</label>
+                <input type="range" id="timeScale" min="0.1" max="5.0" step="0.1" value="1.0">
+                <span id="timeValue">1.0x</span>
+            </div>
+            
+            <div class="control-group">
+                <label>Model Scale:</label>
+                <input type="range" id="scaleSlider" min="0.3" max="2.0" step="0.1" value="1.0">
+                <span id="scaleValue">1.0x</span>
+            </div>
+            
+            <div class="button-row">
+                <button id="playPause">⏸️ Pause</button>
+                <button id="reset">🔄 Reset</button>
+                <button id="showHarmonic">🎵 Harmonics</button>
+                <button id="slowMotion">🐌 Slow Motion</button>
+            </div>
+        </div>
+        
+        <div id="info">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                <h4 style="margin: 0; color: #ffffff; font-size: 12px;">Cosmic Harmony</h4>
+                <span class="sphere-info" id="activeSphere">Luna (Moon)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 9px;">
+                <span class="harmonic-info">Freq: <span id="harmonicFreq">1.00 Hz</span></span>
+                <span class="expansion-info">Scale: <span id="expansionPhase">1.0x</span></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class CosmicHarmonyViz {
+            constructor() {
+                // Mark as initialized to prevent duplicate instances
+                window.cosmicHarmonyInitialized = true;
+                
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.starsCanvas = document.getElementById('stars');
+                this.starsCtx = this.starsCanvas.getContext('2d');
+                
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+                
+                this.time = 0;
+                this.timeScale = 1.0;
+                this.modelScale = 1.0; // Scale factor for entire model
+                this.isPlaying = true;
+                this.showHarmonics = false;
+                this.showExpansion = true; // Always on
+                this.slowMotion = false;
+                
+                // The Nine Spheres with their actual synodic periods (days) as seen from Earth
+                this.spheres = [
+                    { name: 'Luna (Moon)', radius: 60, synodicPeriod: 29.53, color: '#C0C0C0', precessionYears: 18.6 },
+                    { name: 'Mercury', radius: 80, synodicPeriod: 115.88, color: '#FFA500', precessionYears: 365.25 },
+                    { name: 'Venus', radius: 110, synodicPeriod: 583.92, color: '#FFD700', precessionYears: 584 },
+                    { name: 'Sun (Solar)', radius: 150, synodicPeriod: 365.25, color: '#FFFF00', precessionYears: 365.25 },
+                    { name: 'Mars', radius: 190, synodicPeriod: 779.94, color: '#FF4500', precessionYears: 687 },
+                    { name: 'Jupiter', radius: 240, synodicPeriod: 398.88, color: '#FF8C00', precessionYears: 4333 },
+                    { name: 'Saturn', radius: 300, synodicPeriod: 378.09, color: '#DAA520', precessionYears: 10759 },
+                    { name: 'Stellar Sphere', radius: 380, synodicPeriod: 25772 * 365.25, color: '#00FFFF', precessionYears: 26000 }, // Precession cycle
+                    { name: 'Cosmological', radius: 480, synodicPeriod: 13.8e9 * 365.25, color: '#FF69B4', precessionYears: 17500000000 } // Age of universe
+                ];
+                
+                this.setupControls();
+                this.stars = this.generateStars(200);
+                this.animate();
+            }
+            
+            resize() {
+                const rect = this.canvas.parentElement.getBoundingClientRect();
+                const pixelRatio = window.devicePixelRatio || 1;
+                
+                // Set display size
+                this.canvas.style.width = rect.width + 'px';
+                this.canvas.style.height = rect.height + 'px';
+                this.starsCanvas.style.width = rect.width + 'px';
+                this.starsCanvas.style.height = rect.height + 'px';
+                
+                // Set canvas size for high DPI displays
+                this.canvas.width = rect.width * pixelRatio;
+                this.canvas.height = rect.height * pixelRatio;
+                this.starsCanvas.width = rect.width * pixelRatio;
+                this.starsCanvas.height = rect.height * pixelRatio;
+                
+                // Scale context for high DPI
+                this.ctx.scale(pixelRatio, pixelRatio);
+                this.starsCtx.scale(pixelRatio, pixelRatio);
+                
+                this.centerX = rect.width / 2;
+                this.centerY = rect.height / 2;
+                
+                // Scale spheres to fit mobile screens
+                const minDimension = Math.min(rect.width, rect.height);
+                this.scaleFactor = Math.min(1, minDimension / 800);
+                
+                // The Nine Spheres with their actual synodic periods (days) as seen from Earth
+                this.spheres = [
+                    { name: 'Luna (Moon)', radius: 40 * this.scaleFactor, synodicPeriod: 29.53, color: '#C0C0C0', precessionYears: 18.6 },
+                    { name: 'Mercury', radius: 60 * this.scaleFactor, synodicPeriod: 115.88, color: '#FFA500', precessionYears: 365.25 },
+                    { name: 'Venus', radius: 80 * this.scaleFactor, synodicPeriod: 583.92, color: '#FFD700', precessionYears: 584 },
+                    { name: 'Sun (Solar)', radius: 105 * this.scaleFactor, synodicPeriod: 365.25, color: '#FFFF00', precessionYears: 365.25 },
+                    { name: 'Mars', radius: 130 * this.scaleFactor, synodicPeriod: 779.94, color: '#FF4500', precessionYears: 687 },
+                    { name: 'Jupiter', radius: 160 * this.scaleFactor, synodicPeriod: 398.88, color: '#FF8C00', precessionYears: 4333 },
+                    { name: 'Saturn', radius: 190 * this.scaleFactor, synodicPeriod: 378.09, color: '#DAA520', precessionYears: 10759 },
+                    { name: 'Stellar Sphere', radius: 220 * this.scaleFactor, synodicPeriod: 25772 * 365.25, color: '#00FFFF', precessionYears: 26000 }, // Precession cycle
+                    { name: 'Cosmological', radius: 250 * this.scaleFactor, synodicPeriod: 13.8e9 * 365.25, color: '#FF69B4', precessionYears: 17500000000 } // Age of universe
+                ];
+            }
+            
+            generateStars(count) {
+                const stars = [];
+                // Use display dimensions if canvas not yet sized
+                const width = this.starsCanvas.width || window.innerWidth;
+                const height = this.starsCanvas.height || window.innerHeight;
+                
+                for (let i = 0; i < count; i++) {
+                    stars.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        brightness: Math.random() * 0.8 + 0.2,
+                        twinklePhase: Math.random() * Math.PI * 2
+                    });
+                }
+                return stars;
+            }
+            
+            drawStars() {
+                this.starsCtx.clearRect(0, 0, this.starsCanvas.width, this.starsCanvas.height);
+                
+                this.stars.forEach(star => {
+                    const twinkle = Math.sin(this.time * 0.01 + star.twinklePhase) * 0.3 + 0.7;
+                    const alpha = star.brightness * twinkle;
+                    
+                    this.starsCtx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                    this.starsCtx.beginPath();
+                    this.starsCtx.arc(star.x, star.y, 1, 0, Math.PI * 2);
+                    this.starsCtx.fill();
+                });
+            }
+            
+            setupControls() {
+                document.getElementById('timeScale').addEventListener('input', (e) => {
+                    this.timeScale = parseFloat(e.target.value);
+                    document.getElementById('timeValue').textContent = this.timeScale.toFixed(1) + 'x';
+                    // Update slow motion button if manually adjusted
+                    if (this.timeScale <= 0.3 && !this.slowMotion) {
+                        this.slowMotion = true;
+                        document.getElementById('slowMotion').textContent = '🚀 Normal';
+                    } else if (this.timeScale > 0.3 && this.slowMotion) {
+                        this.slowMotion = false;
+                        document.getElementById('slowMotion').textContent = '🐌 Slow Motion';
+                    }
+                });
+                
+                document.getElementById('scaleSlider').addEventListener('input', (e) => {
+                    this.modelScale = parseFloat(e.target.value);
+                    document.getElementById('scaleValue').textContent = this.modelScale.toFixed(1) + 'x';
+                });
+                
+                document.getElementById('playPause').addEventListener('click', () => {
+                    this.isPlaying = !this.isPlaying;
+                    document.getElementById('playPause').textContent = this.isPlaying ? '⏸️ Pause' : '▶️ Play';
+                });
+                
+                document.getElementById('reset').addEventListener('click', () => {
+                    this.time = 0;
+                });
+                
+                document.getElementById('showHarmonic').addEventListener('click', () => {
+                    this.showHarmonics = !this.showHarmonics;
+                    document.getElementById('showHarmonic').textContent = this.showHarmonics ? '🎵 Hide' : '🎵 Harmonics';
+                });
+                
+                document.getElementById('slowMotion').addEventListener('click', () => {
+                    this.slowMotion = !this.slowMotion;
+                    this.timeScale = this.slowMotion ? 0.2 : 1.0;
+                    document.getElementById('timeScale').value = this.timeScale;
+                    document.getElementById('timeValue').textContent = this.timeScale.toFixed(1) + 'x';
+                    document.getElementById('slowMotion').textContent = this.slowMotion ? '🚀 Normal' : '🐌 Slow Motion';
+                });
+            }
+            
+            getHarmonicFrequency(sphere, time) {
+                // Convert synodic period to harmonic frequency
+                const precessionalUnit = 26000; // years
+                const synodicYears = sphere.synodicPeriod / 365.25; // Convert days to years
+                const baseFreq = 1 / (sphere.precessionYears / precessionalUnit);
+                const synodicModulation = Math.sin(time * 0.001 * synodicYears) * 0.1;
+                return baseFreq * (1 + synodicModulation);
+            }
+            
+            getExpansionFactor(time) {
+                // Apply user-controlled scale factor
+                return this.modelScale;
+            }
+            
+            drawSphere(sphere, index, time) {
+                // Convert synodic period to angular velocity (scaled for visualization)
+                // Shorter periods = faster rotation, longer periods = slower rotation
+                const baseSpeed = 365.25 / sphere.synodicPeriod; // Relative to Earth year
+                const angle = (time * this.timeScale * baseSpeed) * 0.02; // Scaled for smooth animation
+                
+                const expansionFactor = this.getExpansionFactor(time); // Always apply expansion
+                const adjustedRadius = sphere.radius * expansionFactor;
+                
+                // Draw orbital path
+                this.ctx.strokeStyle = sphere.color + '40';
+                this.ctx.lineWidth = 1;
+                this.ctx.beginPath();
+                this.ctx.arc(this.centerX, this.centerY, adjustedRadius, 0, Math.PI * 2);
+                this.ctx.stroke();
+                
+                // Calculate position
+                const x = this.centerX + Math.cos(angle) * adjustedRadius;
+                const y = this.centerY + Math.sin(angle) * adjustedRadius;
+                
+                // Draw harmonic waves if enabled
+                if (this.showHarmonics) {
+                    const harmonicFreq = this.getHarmonicFrequency(sphere, time);
+                    const waveAmplitude = 15 * this.scaleFactor;
+                    const synodicModulation = sphere.synodicPeriod / 365.25; // Modulate by synodic period
+                    
+                    this.ctx.strokeStyle = sphere.color + '80';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.beginPath();
+                    
+                    for (let i = 0; i < Math.PI * 2; i += 0.1) {
+                        const waveX = this.centerX + Math.cos(i) * (adjustedRadius + Math.sin(time * harmonicFreq * synodicModulation + i * 5) * waveAmplitude);
+                        const waveY = this.centerY + Math.sin(i) * (adjustedRadius + Math.sin(time * harmonicFreq * synodicModulation + i * 5) * waveAmplitude);
+                        
+                        if (i === 0) {
+                            this.ctx.moveTo(waveX, waveY);
+                        } else {
+                            this.ctx.lineTo(waveX, waveY);
+                        }
+                    }
+                    this.ctx.stroke();
+                }
+                
+                // Draw the celestial body
+                const bodySize = Math.max(2, (6 - index * 0.4) * this.scaleFactor);
+                const pulseSize = bodySize + Math.sin(time * 0.02) * 1;
+                
+                // Glow effect
+                const gradient = this.ctx.createRadialGradient(x, y, 0, x, y, pulseSize * 2);
+                gradient.addColorStop(0, sphere.color);
+                gradient.addColorStop(0.5, sphere.color + '80');
+                gradient.addColorStop(1, sphere.color + '00');
+                
+                this.ctx.fillStyle = gradient;
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, pulseSize * 2, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                // Core body
+                this.ctx.fillStyle = sphere.color;
+                this.ctx.beginPath();
+                this.ctx.arc(x, y, pulseSize, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                return { sphere, harmonicFreq: this.getHarmonicFrequency(sphere, time) };
+            }
+            
+            drawCenter() {
+                // Central point (cosmic center)
+                const pulseSize = (6 + Math.sin(this.time * 0.05) * 2) * this.scaleFactor;
+                
+                const gradient = this.ctx.createRadialGradient(this.centerX, this.centerY, 0, this.centerX, this.centerY, pulseSize * 3);
+                gradient.addColorStop(0, '#FFFFFF');
+                gradient.addColorStop(0.3, '#FFFF00');
+                gradient.addColorStop(0.7, '#FF69B4');
+                gradient.addColorStop(1, 'transparent');
+                
+                this.ctx.fillStyle = gradient;
+                this.ctx.beginPath();
+                this.ctx.arc(this.centerX, this.centerY, pulseSize * 3, 0, Math.PI * 2);
+                this.ctx.fill();
+                
+                this.ctx.fillStyle = '#FFFFFF';
+                this.ctx.beginPath();
+                this.ctx.arc(this.centerX, this.centerY, pulseSize, 0, Math.PI * 2);
+                this.ctx.fill();
+            }
+            
+            updateInfo(activeSphere) {
+                document.getElementById('activeSphere').textContent = activeSphere.sphere.name;
+                document.getElementById('harmonicFreq').textContent = activeSphere.harmonicFreq.toFixed(3) + ' Hz';
+                document.getElementById('expansionPhase').textContent = this.getExpansionFactor(this.time).toFixed(1) + 'x';
+            }
+            
+            animate() {
+                if (this.isPlaying) {
+                    this.time += 1;
+                }
+                
+                // Clear canvas
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw background stars
+                this.drawStars();
+                
+                // Draw cosmic expansion grid (always enabled)
+                this.drawCosmicGrid();
+                
+                // Draw center
+                this.drawCenter();
+                
+                // Draw all spheres and track the most prominent one
+                let activeSphere = null;
+                this.spheres.forEach((sphere, index) => {
+                    const sphereInfo = this.drawSphere(sphere, index, this.time);
+                    if (index === Math.floor(this.time * 0.01) % this.spheres.length) {
+                        activeSphere = sphereInfo;
+                    }
+                });
+                
+                if (activeSphere) {
+                    this.updateInfo(activeSphere);
+                }
+                
+                requestAnimationFrame(() => this.animate());
+            }
+            
+            drawCosmicGrid() {
+                const expansionFactor = this.getExpansionFactor(this.time);
+                const gridSpacing = 50 * expansionFactor;
+                
+                this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+                this.ctx.lineWidth = 1;
+                
+                // Vertical lines
+                for (let x = 0; x < this.canvas.width; x += gridSpacing) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, 0);
+                    this.ctx.lineTo(x, this.canvas.height);
+                    this.ctx.stroke();
+                }
+                
+                // Horizontal lines
+                for (let y = 0; y < this.canvas.height; y += gridSpacing) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, y);
+                    this.ctx.lineTo(this.canvas.width, y);
+                    this.ctx.stroke();
+                }
+            }
+        }
+        
+        // Initialize the visualization with robust deployment-friendly loading
+        function initializeVisualization() {
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => {
+                    new CosmicHarmonyViz();
+                });
+            } else {
+                new CosmicHarmonyViz();
+            }
+        }
+        
+        // Multiple initialization triggers for deployment compatibility
+        if (document.readyState === 'complete') {
+            new CosmicHarmonyViz();
+        } else {
+            initializeVisualization();
+        }
+        
+        // Fallback for deployment environments
+        window.addEventListener('load', () => {
+            if (!window.cosmicHarmonyInitialized) {
+                new CosmicHarmonyViz();
+            }
+        });
+    </script>
+</body>
+</html>

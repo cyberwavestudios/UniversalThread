@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>The Universal Thread of Time</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            overflow: hidden;
+            height: 100%;
+            touch-action: none; /* Prevent all touch-based scrolling */
+            -webkit-touch-callout: none; /* Disable callout */
+            -webkit-user-select: none; /* Disable text selection */
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight */
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: radial-gradient(circle at center, #0a0a1a, #000008);
+            color: #e0e0ff;
+            overflow: hidden;
+            height: 100vh;
+            height: 100dvh; /* Dynamic viewport height for modern browsers */
+            position: fixed; /* Use fixed instead of relative to prevent scrolling */
+            width: 100%;
+            top: 0;
+            left: 0;
+            touch-action: pan-x pan-y; /* Allow controlled touch actions */
+            overscroll-behavior: none; /* Prevent pull-to-refresh */
+            -webkit-overflow-scrolling: auto; /* Disable elastic scrolling */
+        }
+
+        /* Safari-specific fixes */
+        @supports (-webkit-touch-callout: none) {
+            body {
+                height: -webkit-fill-available;
+            }
+            
+            .container {
+                height: -webkit-fill-available;
+                min-height: -webkit-fill-available;
+                justify-content: center;
+                padding: 10px;
+            }
+        }
+
+        /* Starfield Background */
+        .starfield {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        #starsBack {
+            z-index: 1;
+        }
+
+        #starsFront {
+            z-index: 3;
+        }
+
+        /* Holographic Effects */
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(255, 215, 0, 0.08) 2px,
+                rgba(255, 215, 0, 0.08) 3px,
+                transparent 3px,
+                transparent 4px,
+                rgba(0, 255, 255, 0.06) 4px,
+                rgba(0, 255, 255, 0.06) 5px
+            );
+            pointer-events: none;
+            z-index: 10;
+            animation: scanlineMove 0.1s linear infinite;
+        }
+
+        @keyframes scanlineMove {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(4px); }
+        }
+
+        .grid {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 120vmin;
+            height: 120vmin;
+            transform: translate(-50%, -50%);
+            background-image: 
+                linear-gradient(rgba(100, 150, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(100, 150, 255, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            border-radius: 50%;
+            animation: gridRotate 120s linear infinite;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        @keyframes gridRotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .sweep {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100vmin;
+            height: 100vmin;
+            transform: translate(-50%, -50%);
+            background: conic-gradient(
+                from 0deg,
+                transparent 345deg,
+                rgba(255, 215, 0, 0.2) 350deg,
+                rgba(255, 215, 0, 0.4) 355deg,
+                rgba(255, 215, 0, 0.2) 360deg
+            );
+            border-radius: 50%;
+            animation: sweepRotate 6s linear infinite;
+            pointer-events: none;
+            z-index: 4;
+        }
+
+        @keyframes sweepRotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 5;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            max-height: 100vh;
+            max-height: 100dvh;
+            overflow: hidden;
+        }
+
+        /* Dial SVG - Even larger for maximum mobile readability */
+        #dial {
+            width: min(98vw, 98vh);
+            height: min(98vw, 98vh);
+            max-width: 1200px;
+            max-height: 1200px;
+            filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.8));
+            background: radial-gradient(circle, rgba(10, 10, 20, 0.95) 0%, rgba(5, 5, 15, 0.98) 100%);
+            border-radius: 50%;
+        }
+
+        /* Center Infinity Symbol - Now clickable with better mobile touch */
+        .center-node {
+            animation: pulse 3s ease-in-out infinite;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(255, 215, 0, 0.3);
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        .center-node:hover,
+        .center-node:active {
+            opacity: 1 !important;
+            transform: scale(1.2) !important;
+            filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        /* Cosmic Title */
+        .cosmic-title {
+            font-size: clamp(16px, 3.5vw, 32px);
+            letter-spacing: 4px;
+            text-align: center;
+            color: #ffd700;
+            font-weight: 700;
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.8), 0 0 16px rgba(255, 215, 0, 0.4);
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            font-family: serif;
+        }
+
+        /* Real Cosmic Time Display */
+        .rct-display {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 8px 15px;
+            border: 1px solid rgba(0, 170, 204, 0.3);
+            border-radius: 8px;
+            background: rgba(10, 10, 20, 0.7);
+            backdrop-filter: blur(5px);
+        }
+
+        .rct-label {
+            font-size: clamp(10px, 1.5vw, 12px);
+            color: #00aacc;
+            font-weight: 600;
+            margin-bottom: 3px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .rct-position {
+            font-size: clamp(12px, 2vw, 16px);
+            color: #ffffff;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 5px rgba(0, 170, 204, 0.5);
+        }
+        
+        /* Arcsecond Countdown Window */
+        .countdown-window {
+            margin-top: 20px;
+            text-align: center;
+            padding: 12px 20px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            background: rgba(10, 10, 20, 0.7);
+            backdrop-filter: blur(5px);
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .countdown-label {
+            font-size: clamp(10px, 1.5vw, 12px);
+            color: #ffd700;
+            font-weight: 600;
+            margin-bottom: 3px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        .countdown-value {
+            font-size: clamp(12px, 2vw, 16px);
+            color: #ffffff;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Slider Block */
+        .slider-block {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .slider-label {
+            font-size: clamp(12px, 1.8vw, 16px);
+            margin-bottom: 15px;
+            color: #ffd700;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            text-shadow: 0 0 3px rgba(255, 215, 0, 0.5);
+            letter-spacing: 1px;
+        }
+
+        .year-slider {
+            width: min(400px, 80vw);
+            height: 20px; /* Much taller for mobile usability */
+            background: linear-gradient(90deg, #4a4a6a 0%, #2a5a8a 25%, #2a8a6a 50%, #8a6a2a 75%, #8a2a6a 100%);
+            border: 2px solid #ffd700;
+            border-radius: 12px; /* Adjusted for new height */
+            outline: none;
+            appearance: none;
+            cursor: pointer;
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+            touch-action: pan-x; /* Allow only horizontal panning for slider */
+        }
+
+        .year-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 24px;  /* Slightly larger for the taller slider */
+            height: 24px;
+            background: radial-gradient(circle, #ffffff 0%, #ffd700 70%, #cc9900 100%);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+            border: 2px solid #ffd700;
+        }
+
+        .year-slider::-moz-range-thumb {
+            width: 24px;  /* Slightly larger for the taller slider */
+            height: 24px;
+            background: radial-gradient(circle, #ffffff 0%, #ffd700 70%, #cc9900 100%);
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+        }
+
+        /* Help Button - Moved lower to avoid covering title */
+        .help-button {
+            position: absolute;
+            top: 60px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border: 2px solid rgba(100, 150, 255, 0.5);
+            background: rgba(10, 10, 15, 0.8);
+            border-radius: 50%;
+            color: #b0b0d0;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 20;
+        }
+
+
+        .help-button:hover,
+        .help-button:focus {
+            border-color: #ffd700;
+            color: #ffd700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+            outline: none;
+        }
+
+        /* T.T.L. Button - Left side, aligned with countdown window */
+        .ttl-button {
+            position: absolute;
+            bottom: 120px;
+            left: 20px;
+            width: 40px;
+            height: 40px;
+            border: 2px solid rgba(255, 105, 180, 0.5);
+            background: rgba(10, 10, 15, 0.8);
+            border-radius: 50%;
+            color: #b0b0d0;
+            font-size: 9px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 20;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(255, 105, 180, 0.3);
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .ttl-button:hover,
+        .ttl-button:focus {
+            border-color: #ff69b4;
+            color: #ff69b4;
+            box-shadow: 0 0 15px rgba(255, 105, 180, 0.3);
+            outline: none;
+        }
+
+        /* C.H. Button - Right side, aligned with countdown window */
+        .ch-button {
+            position: absolute;
+            bottom: 120px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border: 2px solid rgba(0, 255, 255, 0.5);
+            background: rgba(10, 10, 15, 0.8);
+            border-radius: 50%;
+            color: #b0b0d0;
+            font-size: 9px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 20;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: rgba(0, 255, 255, 0.3);
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .ch-button:hover,
+        .ch-button:focus {
+            border-color: #00ffff;
+            color: #00ffff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+            outline: none;
+        }
+
+        /* Help Overlay */
+        .help-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        .help-overlay.show {
+            display: flex;
+        }
+
+        .help-content {
+            background: linear-gradient(135deg, rgba(15, 15, 25, 0.95), rgba(25, 25, 40, 0.95));
+            border: 2px solid rgba(100, 150, 255, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            position: relative;
+            box-shadow: 0 0 30px rgba(100, 150, 255, 0.2);
+            overflow-y: auto;
+        }
+
+        .help-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #b0b0d0;
+            font-size: 24px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .help-close:hover,
+        .help-close:focus {
+            color: #ffd700;
+            outline: none;
+        }
+
+        .help-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #e0e0ff;
+            text-align: center;
+        }
+
+        .help-content ul {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .help-content li {
+            margin-bottom: 8px;
+            padding-left: 15px;
+            position: relative;
+            line-height: 1.4;
+            font-size: 14px;
+        }
+
+        .help-content li::before {
+            content: "•";
+            color: #ffd700;
+            position: absolute;
+            left: 0;
+        }
+
+        .help-footer {
+            font-style: italic;
+            text-align: center;
+            color: #a0a0c0;
+            font-size: 13px;
+            line-height: 1.3;
+        }
+
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            .scanlines { animation: none; }
+            .grid { animation-duration: 300s; }
+            .sweep { animation-duration: 20s; }
+            .center-node { animation: none; }
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .container {
+                padding: 5px;
+            }
+            
+            .help-content {
+                padding: 20px;
+                margin: 10px;
+                max-height: 70vh;
+            }
+            
+            .help-button {
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+                top: 50px;
+            }
+            
+            /* Make clock even larger on mobile */
+            #dial {
+                width: min(99vw, 99vh);
+                height: min(99vw, 99vh);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Starfield Background -->
+    <canvas id="starsBack" class="starfield"></canvas>
+    <canvas id="starsFront" class="starfield"></canvas>
+    
+    <!-- Holographic Effects -->
+    <div class="scanlines"></div>
+    <div class="grid"></div>
+    <div class="sweep"></div>
+    
+    <!-- Help Button -->
+    <button class="help-button" id="helpButton" title="Help" aria-label="Show help information">?</button>
+    
+    <!-- T.T.L. Button -->
+    <a href="threaded-ladder.html" class="ttl-button" id="ttlButton" title="The Threaded Ladder" aria-label="Visit The Threaded Ladder">T.T.L.</a>
+    
+    <!-- C.H. Button -->
+    <a href="cosmic-harmony.html" class="ch-button" id="chButton" title="Cosmic Harmony" aria-label="Visit Cosmic Harmony">C.H.</a>
+    
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Mystical Title -->
+        <div class="cosmic-title">The Universal Thread of Time</div>
+        
+        <!-- Real Cosmic Time Display -->
+        <div class="rct-display" id="rctDisplay">
+            <div class="rct-label">R.C.T. (Real Cosmic Time)</div>
+            <div class="rct-position" id="rctPosition">Loading...</div>
+        </div>
+        
+        <!-- SVG Dial -->
+        <svg id="dial" viewBox="-500 -500 1000 1000" aria-label="Cosmological Clock showing Great Year precession">
+            <!-- Outer Cosmic Year Bezel -->
+            <defs>
+                <linearGradient id="bezelGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#ff006e;stop-opacity:0.3" />
+                    <stop offset="100%" style="stop-color:#8338ec;stop-opacity:0.1" />
+                </linearGradient>
+                <linearGradient id="bezelGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#3a86ff;stop-opacity:0.3" />
+                    <stop offset="100%" style="stop-color:#06ffa5;stop-opacity:0.1" />
+                </linearGradient>
+            </defs>
+            <!-- Main Clock Face Background -->
+            <circle cx="0" cy="0" r="480" fill="#0f0f1a" stroke="#2a2a3a" stroke-width="4"/>
+            <circle cx="0" cy="0" r="400" fill="#1a1a2a" stroke="none"/>
+            
+            <g id="outerBezel">
+                <!-- 12 solid alternating segments -->
+                <path d="M 0,-480 A 480,480 0 0,1 415.69,-240 L 346.41,-200 A 400,400 0 0,0 0,-400 Z" 
+                      fill="#2a2a3a" stroke="#ffd700" stroke-width="2"/>
+                <path d="M 415.69,-240 A 480,480 0 0,1 415.69,240 L 346.41,200 A 400,400 0 0,0 346.41,-200 Z" 
+                      fill="#242438" stroke="#00aacc" stroke-width="2"/>
+                <path d="M 415.69,240 A 480,480 0 0,1 0,480 L 0,400 A 400,400 0 0,0 346.41,200 Z" 
+                      fill="#2a2a3a" stroke="#ffd700" stroke-width="2"/>
+                <path d="M 0,480 A 480,480 0 0,1 -415.69,240 L -346.41,200 A 400,400 0 0,0 0,400 Z" 
+                      fill="#242438" stroke="#00aacc" stroke-width="2"/>
+                <path d="M -415.69,240 A 480,480 0 0,1 -415.69,-240 L -346.41,-200 A 400,400 0 0,0 -346.41,200 Z" 
+                      fill="#2a2a3a" stroke="#ffd700" stroke-width="2"/>
+                <path d="M -415.69,-240 A 480,480 0 0,1 0,-480 L 0,-400 A 400,400 0 0,0 -346.41,-200 Z" 
+                      fill="#242438" stroke="#00aacc" stroke-width="2"/>
+            </g>
+            
+            <!-- Main Great Year Ring -->
+            <circle cx="0" cy="0" r="400" fill="none" stroke="#00aacc" stroke-width="3"/>
+            <circle cx="0" cy="0" r="400" fill="none" stroke="#ffd700" stroke-width="1" stroke-dasharray="8,4"/>
+            
+            <!-- Tick Marks -->
+            <g id="ticks">
+                <!-- Major ticks every 30° -->
+                <g stroke="#ffd700" stroke-width="3">
+                    <!-- 12 major ticks -->
+                    <line x1="0" y1="-400" x2="0" y2="-370" transform="rotate(0)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-370" transform="rotate(30)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-370" transform="rotate(60)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-370" transform="rotate(90)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-370" transform="rotate(120)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-370" transform="rotate(150)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-370" transform="rotate(180)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-370" transform="rotate(210)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-370" transform="rotate(240)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-370" transform="rotate(270)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-370" transform="rotate(300)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-370" transform="rotate(330)"/>
+                </g>
+                
+                <!-- Minor ticks every 5° -->
+                <g stroke="#00aacc" stroke-width="1" opacity="0.8">
+                    <!-- Generate 72 minor ticks -->
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(5)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(10)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(15)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(20)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(25)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(35)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(40)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(45)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(50)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(55)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(65)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(70)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(75)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(80)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(85)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(95)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(100)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(105)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(110)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(115)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(125)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(130)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(135)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(140)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(145)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(155)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(160)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(165)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(170)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(175)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(185)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(190)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(195)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(200)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(205)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(215)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(220)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(225)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(230)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(235)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(245)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(250)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(255)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(260)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(265)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(275)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(280)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(285)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(290)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(295)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(305)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(310)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(315)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(320)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(325)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(335)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(340)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(345)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(350)"/>
+                    <line x1="0" y1="-400" x2="0" y2="-390" transform="rotate(355)"/>
+                </g>
+            </g>
+            
+            <!-- Zodiac Glyphs in Retrograde (Precession) Order -->
+            <!-- Zodiac Symbol Backgrounds -->
+            <g id="glyphBackgrounds">
+                <circle cx="92.012" cy="-342.020" r="25" fill="#2a2a3a" stroke="#ffd700" stroke-width="2"/>
+                <circle cx="251.729" cy="-251.729" r="25" fill="#2a2a3a" stroke="#ffd700" stroke-width="2"/>
+                <circle cx="342.020" cy="-92.012" r="25" fill="#2a2a3a" stroke="#ffd700" stroke-width="2"/>
+                <circle cx="342.020" cy="92.012" r="25" fill="#2a2a3a" stroke="#ffd700" stroke-width="2"/>
+                <circle cx="251.729" cy="251.729" r="25" fill="#2a2a3a" stroke="#ffd700" stroke-width="2"/>
+                <circle cx="92.012" cy="342.020" r="25" fill="#2a2a3a" stroke="#ffd700" stroke-width="2"/>
+                <circle cx="-92.012" cy="342.020" r="25" fill="#2a2a3a" stroke="#ffd700" stroke-width="2"/>
+                <circle cx="-251.729" cy="251.729" r="25" fill="#2a2a3a" stroke="#ffd700" stroke-width="2"/>
+                <circle cx="-342.020" cy="92.012" r="25" fill="#2a2a3a" stroke="#ffd700" stroke-width="2"/>
+                <circle cx="-342.020" cy="-92.012" r="25" fill="#2a2a3a" stroke="#ffd700" stroke-width="2"/>
+                <circle cx="-251.729" cy="-251.729" r="25" fill="#2a2a3a" stroke="#ffd700" stroke-width="2"/>
+                <circle cx="-92.012" cy="-342.020" r="25" fill="#2a2a3a" stroke="#ffd700" stroke-width="2"/>
+            </g>
+            <g id="glyphs" font-family="serif" font-size="48" text-anchor="middle" font-weight="bold" fill="#ffd700">
+                <!-- ♒ Aquarius at 15° (center of 0°-30° sector) -->
+                <text x="92.012" y="-342.020" dominant-baseline="middle">♒︎</text>
+                <!-- ♑ Capricorn at 45° (center of 30°-60° sector) -->
+                <text x="251.729" y="-251.729" dominant-baseline="middle">♑︎</text>
+                <!-- ♐ Sagittarius at 75° (center of 60°-90° sector) -->
+                <text x="342.020" y="-92.012" dominant-baseline="middle">♐︎</text>
+                <!-- ♏ Scorpio at 105° (center of 90°-120° sector) -->
+                <text x="342.020" y="92.012" dominant-baseline="middle">♏︎</text>
+                <!-- ♎ Libra at 135° (center of 120°-150° sector) -->
+                <text x="251.729" y="251.729" dominant-baseline="middle">♎︎</text>
+                <!-- ♍ Virgo at 165° (center of 150°-180° sector) -->
+                <text x="92.012" y="342.020" dominant-baseline="middle">♍︎</text>
+                <!-- ♌ Leo at 195° (center of 180°-210° sector) -->
+                <text x="-92.012" y="342.020" dominant-baseline="middle">♌︎</text>
+                <!-- ♋ Cancer at 225° (center of 210°-240° sector) -->
+                <text x="-251.729" y="251.729" dominant-baseline="middle">♋︎</text>
+                <!-- ♊ Gemini at 255° (center of 240°-270° sector) -->
+                <text x="-342.020" y="92.012" dominant-baseline="middle">♊︎</text>
+                <!-- ♉ Taurus at 285° (center of 270°-300° sector) -->
+                <text x="-342.020" y="-92.012" dominant-baseline="middle">♉︎</text>
+                <!-- ♈ Aries at 315° (center of 300°-330° sector) -->
+                <text x="-251.729" y="-251.729" dominant-baseline="middle">♈︎</text>
+                <!-- ♓ Pisces at 345° (center of 330°-360° sector) -->
+                <text x="-92.012" y="-342.020" dominant-baseline="middle">♓︎</text>
+            </g>
+            
+            <!-- Fixed Markers -->
+            <!-- Apoapsis Marker -->
+            <g id="apoapsisMarker" transform="rotate(0) translate(0, -400)">
+                <circle cx="0" cy="0" r="15" fill="#2a2a3a" stroke="#ffd700" stroke-width="3"/>
+                <circle cx="0" cy="0" r="8" fill="#ffd700"/>
+                <text x="0" y="35" font-family="monospace" font-size="12" font-weight="bold" 
+                      fill="#ffd700" text-anchor="middle" dominant-baseline="central"
+                      style="paint-order: stroke fill; stroke: #1a1a2a; stroke-width: 2px;">APOAPSIS</text>
+            </g>
+            
+            <!-- Periapsis Marker and Label at Gemini/Cancer Cusp -->
+            <g id="periapsisGroup">
+                <!-- Periapsis Marker on Outer Circle -->
+                <g transform="rotate(240) translate(0, -480)">
+                    <circle cx="0" cy="0" r="15" fill="#cc3333" stroke="#ff6666" stroke-width="3"/>
+                    <circle cx="0" cy="0" r="8" fill="#ffffff"/>
+                </g>
+                <!-- Big Bang Label Next to Marker -->
+                <g transform="rotate(240)">
+                    <rect x="-40" y="-470" width="80" height="18" fill="#1a1a2a" stroke="#ff6666" stroke-width="2" rx="3"/>
+                    <text x="0" y="-460" font-family="monospace" font-size="11" font-weight="bold" 
+                          fill="#ff6666" text-anchor="middle" dominant-baseline="central">BIG BANG</text>
+                </g>
+            </g>
+            
+            <!-- Clock Hands -->
+            <!-- Now Hand -->
+            <g id="nowHand">
+                <line x1="0" y1="0" x2="0" y2="-380" stroke="#00aacc" stroke-width="5" stroke-linecap="round"/>
+                <line x1="0" y1="0" x2="0" y2="-380" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="0" cy="0" r="12" fill="#2a2a3a" stroke="#00aacc" stroke-width="3"/>
+                <circle cx="0" cy="0" r="6" fill="#00aacc"/>
+                <!-- Now Point on Zodiacal Circle -->
+                <circle cx="0" cy="-400" r="8" fill="#00aacc" stroke="#ffffff" stroke-width="2" id="nowPoint"/>
+            </g>
+            
+            <!-- Marker Hand (initially hidden) -->
+            <g id="markHand" style="opacity: 0;">
+                <line x1="0" y1="0" x2="0" y2="-360" stroke="#ffd700" stroke-width="4" stroke-linecap="round"/>
+                <line x1="0" y1="0" x2="0" y2="-360" stroke="#ffff00" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="0" cy="0" r="10" fill="#2a2a3a" stroke="#ffd700" stroke-width="3"/>
+                <circle cx="0" cy="0" r="5" fill="#ffd700"/>
+            </g>
+            
+            <!-- Center Node - Clickable -->
+            <g class="center-node">
+                <circle cx="0" cy="0" r="40" fill="#1a1a2a" stroke="#ffd700" stroke-width="4"/>
+                <circle cx="0" cy="0" r="30" fill="#2a2a3a" stroke="#00aacc" stroke-width="2"/>
+                <circle cx="0" cy="0" r="20" fill="none" stroke="#ffd700" stroke-width="1" stroke-dasharray="3,2"/>
+                <text x="0" y="0" font-size="28" text-anchor="middle" dominant-baseline="central" 
+                      fill="#ffd700" font-weight="bold">∞</text>
+            </g>
+        </svg>
+        
+        <!-- Arcsecond Countdown Window -->
+        <div class="countdown-window">
+            <div class="countdown-label">Next 0.01″ Milestone</div>
+            <div class="countdown-value" id="countdownValue">Loading...</div>
+        </div>
+        
+        <!-- Slider Block -->
+        <div class="slider-block">
+            <div class="slider-label" id="sliderLabel">Mark a year (optional): —</div>
+            <input type="range" id="yearSlider" class="year-slider" 
+                   min="-6062" max="6823" step="1" value="2025"
+                   aria-label="Select year to mark on clock">
+        </div>
+    </div>
+    
+    <!-- Help Overlay -->
+    <div class="help-overlay" id="helpOverlay">
+        <div class="help-content">
+            <button class="help-close" id="helpClose" aria-label="Close help">&times;</button>
+            <h2 class="help-title">Reading The Universal Thread of Time</h2>
+            <ul>
+                <li>The blue "Now" hand shows our place in the Great Year (precession).</li>
+                <li>The outer bezel shows 12 "Cosmic Months".</li>
+                <li>The golden dot marks a far-future apoapsis (6823 C.E.).</li>
+                <li>The red dot marks the Big Bang at the Gemini/Cancer cusp.</li>
+                <li>The slider range (6062 B.C.E. to 6823 C.E.) spans one half of a Great Year cycle and encompasses all of recorded human history.</li>
+                <li>1 degree ≈ 71.5877 tropical years (a "Great Day").</li>
+                <li><strong>Cosmic Synchronicity:</strong> The Big Bang (13.8 billion years ago) and our cycle's periapsis (6062 B.C.E.) align at the same angular position because they are separated by exactly 535,380 complete Great Years - revealing the profound mathematical harmony underlying cosmic time.</li>
+            </ul>
+            <div class="help-footer">
+                This visualization bridges ancient Hermetic-Pythagorean wisdom with modern cosmological understanding, 
+                revealing the profound interconnection between celestial cycles and the vast timeline of our universe.
+                <br><br>
+                <a href="https://www.patreon.com/CyberwaveResistanceNetwork?utm_campaign=creatorshare_creator" 
+                   target="_blank" 
+                   style="color: #ffd700; text-decoration: none; font-weight: bold; border: 1px solid rgba(255, 215, 0, 0.3); padding: 8px 16px; border-radius: 5px; display: inline-block; margin-top: 10px; transition: all 0.3s ease;"
+                   onmouseover="this.style.backgroundColor='rgba(255, 215, 0, 0.1)'; this.style.borderColor='#ffd700';"
+                   onmouseout="this.style.backgroundColor='transparent'; this.style.borderColor='rgba(255, 215, 0, 0.3)';">Join the Resistance</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mathematical Constants
+        const AQUARIUS_CUSP = 2528.0;
+        const GREAT_DAY_YEARS = 71.5877092;
+        const PERIAPSIS_YEAR = -13800003842.987;
+        const APOAPSIS_YEAR = 6823.26256;
+
+        // DOM References
+        const dial = document.getElementById('dial');
+        const nowHand = document.getElementById('nowHand');
+        const markHand = document.getElementById('markHand');
+        const yearSlider = document.getElementById('yearSlider');
+        const sliderLabel = document.getElementById('sliderLabel');
+        const helpButton = document.getElementById('helpButton');
+        const helpOverlay = document.getElementById('helpOverlay');
+        const helpClose = document.getElementById('helpClose');
+        const apoapsisMarker = document.getElementById('apoapsisMarker');
+        const periapsisGroup = document.getElementById('periapsisGroup');
+        const starsBack = document.getElementById('starsBack');
+        const starsFront = document.getElementById('starsFront');
+        const rctPosition = document.getElementById('rctPosition');
+        const countdownValue = document.getElementById('countdownValue');
+
+        // Starfield Configuration
+        const starsBackConfig = { count: 200, speed: 0.2, size: { min: 1, max: 2 } };
+        const starsFrontConfig = { count: 100, speed: 0.5, size: { min: 2, max: 4 } };
+
+        // Great Year Calculation - RESTORED to original working logic
+        function calculateTheta(year) {
+            // Original positioning logic that was working perfectly
+            let th = -(AQUARIUS_CUSP - year) / GREAT_DAY_YEARS;
+            
+            // Ensure monotonic clockwise progression
+            th = ((th % 360) + 360) % 360;
+            return th;
+        }
+
+        // Separate R.C.T. calculation (user's specific formula)
+        function calculateRCT(year) {
+            // Use the established RCT calculation (which was working correctly for display)
+            // θ = (2528 - t) / 71.5877092 mod 360
+            let th = (AQUARIUS_CUSP - year) / GREAT_DAY_YEARS;
+            th = ((th % 360) + 360) % 360;
+            return th;
+        }
+
+        // Zodiac Sign Calculation
+        const ZODIAC_SIGNS = [
+            'Aquarius', 'Pisces', 'Aries', 'Taurus', 'Gemini', 'Cancer',
+            'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn'
+        ];
+
+        function getZodiacPosition(theta) {
+            // Precession goes in retrograde order
+            // When theta is around 7° (current time), we're in Pisces at about 23°
+            // Pisces is the 30° sector immediately before Aquarius (which starts at theta = 0°)
+            
+            if (theta >= 0 && theta < 30) {
+                // We're in Pisces (the sector before Aquarius in retrograde)
+                return {
+                    sign: 'Pisces',
+                    degrees: 30 - theta  // 30° - 7° = 23° into Pisces
+                };
+            } else {
+                // For other sectors, work backwards through the zodiac
+                const signIndex = Math.floor(theta / 30);
+                const degreesIntoSign = theta % 30;
+                
+                // Map to the retrograde zodiac sequence
+                // Aquarius=0°, Pisces=30°, Aries=60°, Taurus=90°, etc.
+                const retrogradeIndex = (signIndex + 11) % 12; // Shift to get retrograde order
+                
+                return {
+                    sign: ZODIAC_SIGNS[retrogradeIndex],
+                    degrees: 30 - degreesIntoSign  // Degrees counted backwards in each sign
+                };
+            }
+        }
+
+        function formatDegreesDMS(decimalDegrees) {
+            const degrees = Math.floor(decimalDegrees);
+            const minutesFloat = (decimalDegrees - degrees) * 60;
+            const minutes = Math.floor(minutesFloat);
+            const seconds = (minutesFloat - minutes) * 60;
+            
+            return `${degrees}° ${minutes}′ ${seconds.toFixed(2)}″`;
+        }
+
+        // Current Fractional Year
+        function fractionalYearNow() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const start = new Date(year, 0, 1);
+            const end = new Date(year + 1, 0, 1);
+            const fraction = (now - start) / (end - start);
+            return year + fraction;
+        }
+        
+        // Calculate next 0.01 arcsecond milestone and countdown (retrograde progression INCREASES)
+        function calculateArcsecondCountdown(currentYear) {
+            // Use RCT calculation for countdown (separate from hand position)
+            const currentTheta = calculateRCT(currentYear);
+            
+            // Convert to retrograde degrees (increases over time)
+            const retrogradeTheta = 30 - currentTheta; // Same conversion as display
+            const retrogradeArcseconds = retrogradeTheta * 3600; // degrees to arcseconds
+            
+            // Find current position within 0.01" grid
+            const currentHundredths = retrogradeArcseconds * 100; // Position in 0.01" units
+            const wholeHundredths = Math.floor(currentHundredths); // Whole 0.01" units completed
+            const fractionalProgress = currentHundredths - wholeHundredths; // How far into current 0.01"
+            
+            // Calculate time remaining to complete current 0.01" interval
+            const remainingFraction = 1.0 - fractionalProgress; // Fraction of 0.01" left to go
+            const arcsecondsRemaining = remainingFraction * 0.01; // Arcseconds left in interval
+            const degreesRemaining = arcsecondsRemaining / 3600; // Convert to degrees
+            const yearsRemaining = degreesRemaining * GREAT_DAY_YEARS; // FIXED: multiply, not divide!
+            const millisecondsRemaining = yearsRemaining * 365.25 * 24 * 60 * 60 * 1000;
+            
+            // Target milestone (next 0.01" boundary)
+            const nextMilestoneHundredths = wholeHundredths + 1;
+            const nextMilestoneArcseconds = nextMilestoneHundredths / 100;
+            
+            // Ensure countdown never shows exactly zero (always show some time remaining)
+            const timeRemaining = Math.max(100, millisecondsRemaining); // Minimum 100ms
+            
+            return {
+                currentArcseconds: retrogradeArcseconds,
+                nextMilestone: nextMilestoneArcseconds,
+                timeRemaining: timeRemaining
+            };
+        }
+        
+        // Format countdown time
+        function formatCountdown(milliseconds) {
+            if (milliseconds <= 0) return "0.00″ reached!";
+            
+            const days = Math.floor(milliseconds / (24 * 60 * 60 * 1000));
+            const hours = Math.floor((milliseconds % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+            const minutes = Math.floor((milliseconds % (60 * 60 * 1000)) / (60 * 1000));
+            const seconds = Math.floor((milliseconds % (60 * 1000)) / 1000); // Seconds remaining after minutes
+            const totalSeconds = milliseconds / 1000; // Keep fractional seconds for < 1s display
+            
+            if (days > 0) {
+                return `${days}d ${hours}h ${minutes}m`;
+            } else if (hours > 0) {
+                return `${hours}h ${minutes}m ${seconds}s`;
+            } else if (minutes > 0) {
+                return `${minutes}m ${seconds}s`;
+            } else if (totalSeconds >= 1) {
+                return `${seconds}s`;
+            } else {
+                // Show fractional seconds for values under 1 second
+                return `${totalSeconds.toFixed(1)}s`;
+            }
+        }
+        
+        // Update slider default year (called on initialization and yearly)
+        function updateSliderDefaultYear() {
+            const currentYear = new Date().getFullYear();
+            if (yearSlider && !yearSlider.hasAttribute('data-user-interacted')) {
+                yearSlider.value = currentYear.toString();
+            }
+        }
+
+        // Year Formatting
+        function formatYear(year) {
+            if (year === 0) return "0 C.E.";
+            
+            const absYear = Math.abs(year);
+            const formattedNumber = absYear.toLocaleString('en-US', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            });
+            
+            return year < 0 ? `${formattedNumber} B.C.E.` : `${formattedNumber} C.E.`;
+        }
+
+        // Initialize Starfield
+        function initStarfield(canvas, config) {
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+                console.error('Failed to get canvas context');
+                return null;
+            }
+            
+            ctx.scale(dpr, dpr);
+            
+            const stars = [];
+            for (let i = 0; i < config.count; i++) {
+                stars.push({
+                    x: Math.random() * rect.width,
+                    y: Math.random() * rect.height,
+                    size: Math.random() * (config.size.max - config.size.min) + config.size.min,
+                    alpha: Math.random() * 0.8 + 0.2,
+                    twinkleSpeed: Math.random() * 0.02 + 0.01
+                });
+            }
+            
+            return { ctx, stars, width: rect.width, height: rect.height };
+        }
+
+        // Animate Starfield
+        function animateStarfield(starfield, time) {
+            if (!starfield || !starfield.ctx) return;
+            
+            const { ctx, stars, width, height } = starfield;
+            ctx.clearRect(0, 0, width, height);
+            
+            stars.forEach(star => {
+                // Twinkle effect
+                star.alpha = 0.3 + 0.5 * (Math.sin(time * star.twinkleSpeed) + 1) / 2;
+                
+                ctx.fillStyle = `rgba(200, 200, 255, ${star.alpha})`;
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        // Initialize starfields
+        let starsBackField, starsFrontField;
+
+        function initStarfields() {
+            starsBackField = initStarfield(starsBack, starsBackConfig);
+            starsFrontField = initStarfield(starsFront, starsFrontConfig);
+        }
+
+        // Position Fixed Markers
+        function positionFixedMarkers() {
+            try {
+                const apoapsisTheta = calculateTheta(APOAPSIS_YEAR);
+                
+                if (apoapsisMarker) {
+                    apoapsisMarker.setAttribute('transform', `rotate(${apoapsisTheta}) translate(0, -400)`);
+                }
+                // Periapsis is fixed at 240° in the SVG (Gemini/Cancer cusp)
+            } catch (error) {
+                console.error('Error positioning markers:', error);
+            }
+        }
+
+        // Page Visibility API for performance
+        let animationRunning = true;
+        document.addEventListener('visibilitychange', function() {
+            animationRunning = !document.hidden;
+        });
+        
+        // Check for January 1st and update slider default yearly
+        let lastCheckedYear = new Date().getFullYear();
+        function checkYearChange() {
+            const currentYear = new Date().getFullYear();
+            if (currentYear !== lastCheckedYear) {
+                lastCheckedYear = currentYear;
+                updateSliderDefaultYear();
+            }
+        }
+        
+        // Check for year change every minute
+        setInterval(checkYearChange, 60000);
+
+        // Prevent scrolling on touch devices (especially Safari)
+        document.addEventListener('touchstart', function(e) {
+            // Allow touch events on interactive elements: slider, help button, help overlay, T.T.L., C.H.
+            if (!e.target.closest('.year-slider, .help-button, .help-overlay, .help-content, .ttl-button, .ch-button')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchmove', function(e) {
+            // Prevent only unwanted scrolling moves, allow interactions
+            if (!e.target.closest('.year-slider, .help-overlay, .ttl-button, .ch-button')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        // Animation Loop
+        function animate() {
+            if (!animationRunning) {
+                requestAnimationFrame(animate);
+                return;
+            }
+            
+            try {
+                const now = fractionalYearNow();
+                const theta = calculateTheta(now);
+                const time = Date.now() * 0.001;
+                
+                // Update now hand
+                if (nowHand) {
+                    nowHand.setAttribute('transform', `rotate(${theta})`);
+                }
+                
+                // Update Real Cosmic Time display (using separate R.C.T. calculation)
+                if (rctPosition) {
+                    const rctTheta = calculateRCT(now);
+                    const zodiacPos = getZodiacPosition(rctTheta);
+                    const dmsFormat = formatDegreesDMS(zodiacPos.degrees);
+                    rctPosition.textContent = `${dmsFormat} ${zodiacPos.sign}`;
+                }
+                
+                // Update arcsecond countdown
+                if (countdownValue) {
+                    const countdown = calculateArcsecondCountdown(now);
+                    const formattedCountdown = formatCountdown(countdown.timeRemaining);
+                    countdownValue.textContent = formattedCountdown;
+                }
+                
+                // Animate starfields
+                if (starsBackField && starsFrontField) {
+                    animateStarfield(starsBackField, time);
+                    animateStarfield(starsFrontField, time * 1.5);
+                }
+                
+                requestAnimationFrame(animate);
+            } catch (error) {
+                console.error('Animation error:', error);
+                requestAnimationFrame(animate);
+            }
+        }
+
+        // Slider state management
+        let sliderTimeout;
+        let lastSliderInteraction = 0;
+        
+        // Slider Event Handler
+        yearSlider.addEventListener('input', function() {
+            // Mark that user has interacted with slider
+            this.setAttribute('data-user-interacted', 'true');
+            
+            lastSliderInteraction = Date.now();
+            const selectedYear = parseFloat(this.value);
+            const theta = calculateTheta(selectedYear);
+            
+            // Show marker hand and update its position
+            if (markHand) {
+                markHand.style.opacity = '1';
+                markHand.setAttribute('transform', `rotate(${theta})`);
+            }
+            
+            // Update label
+            if (sliderLabel) {
+                sliderLabel.textContent = `Mark a year (optional): ${formatYear(selectedYear)}`;
+            }
+            
+            // Clear existing timeout
+            clearTimeout(sliderTimeout);
+            
+            // Set timeout to reset to current year after 10 seconds of inactivity
+            sliderTimeout = setTimeout(() => {
+                if (Date.now() - lastSliderInteraction >= 10000) {
+                    const currentYear = new Date().getFullYear();
+                    if (yearSlider) {
+                        yearSlider.value = currentYear.toString();
+                        yearSlider.removeAttribute('data-user-interacted');
+                    }
+                    const theta = calculateTheta(currentYear);
+                    if (markHand) {
+                        markHand.style.opacity = '1';
+                        markHand.setAttribute('transform', `rotate(${theta})`);
+                    }
+                    if (sliderLabel) sliderLabel.textContent = `Mark a year (optional): ${formatYear(currentYear)}`;
+                }
+            }, 10000);
+        });
+        
+        // Reset slider on double-click
+        yearSlider.addEventListener('dblclick', function() {
+            // Reset to current year and clear user interaction flag
+            const currentYear = new Date().getFullYear();
+            this.value = currentYear.toString();
+            this.removeAttribute('data-user-interacted');
+            const theta = calculateTheta(currentYear);
+            if (markHand) {
+                markHand.style.opacity = '1';
+                markHand.setAttribute('transform', `rotate(${theta})`);
+            }
+            if (sliderLabel) sliderLabel.textContent = `Mark a year (optional): ${formatYear(currentYear)}`;
+            clearTimeout(sliderTimeout);
+        });
+
+        // Help System
+        helpButton.addEventListener('click', showHelp);
+        helpClose.addEventListener('click', hideHelp);
+        helpOverlay.addEventListener('click', function(e) {
+            if (e.target === helpOverlay) {
+                hideHelp();
+            }
+        });
+
+        // Center Infinity Symbol - Add touch event support
+        const centerNode = document.querySelector('.center-node');
+        if (centerNode) {
+            // Add touch event handlers for mobile
+            centerNode.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                this.style.transform = 'scale(1.1)';
+            });
+            centerNode.addEventListener('touchend', function(e) {
+                e.preventDefault();
+                this.style.transform = 'scale(1)';
+                window.open('https://www.patreon.com/CyberwaveResistanceNetwork?utm_campaign=creatorshare_creator', '_blank');
+            });
+            centerNode.addEventListener('touchcancel', function(e) {
+                this.style.transform = 'scale(1)';
+            });
+            // Also add click for desktop
+            centerNode.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.open('https://www.patreon.com/CyberwaveResistanceNetwork?utm_campaign=creatorshare_creator', '_blank');
+            });
+        }
+
+        function showHelp() {
+            helpOverlay.classList.add('show');
+            helpClose.focus();
+        }
+
+        function hideHelp() {
+            helpOverlay.classList.remove('show');
+            helpButton.focus();
+        }
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && helpOverlay.classList.contains('show')) {
+                hideHelp();
+            }
+        });
+
+        // Debounced Resize Handler
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                try {
+                    initStarfields();
+                } catch (error) {
+                    console.error('Resize error:', error);
+                }
+            }, 250);
+        });
+
+        // Initialize Application
+        function init() {
+            try {
+                // Verify all required elements exist
+                const requiredElements = {
+                    dial, nowHand, markHand, yearSlider, sliderLabel,
+                    helpButton, helpOverlay, helpClose, apoapsisMarker,
+                    periapsisGroup, starsBack, starsFront
+                };
+                
+                for (const [name, element] of Object.entries(requiredElements)) {
+                    if (!element) {
+                        console.warn(`Element ${name} not found`);
+                    }
+                }
+                
+                // Set up starfields
+                initStarfields();
+                
+                // Position fixed markers
+                positionFixedMarkers();
+                
+                // Initialize slider state with current year displayed
+                const currentYear = new Date().getFullYear();
+                if (yearSlider) {
+                    yearSlider.value = currentYear.toString();
+                    const theta = calculateTheta(currentYear);
+                    if (markHand) {
+                        markHand.style.opacity = '1';
+                        markHand.setAttribute('transform', `rotate(${theta})`);
+                    }
+                }
+                if (sliderLabel) sliderLabel.textContent = `Mark a year (optional): ${formatYear(currentYear)}`;
+                
+                // Set slider default to current year
+                updateSliderDefaultYear();
+                
+                // Start animation loop
+                animate();
+                
+            } catch (error) {
+                console.error('Initialization error:', error);
+            }
+        }
+
+        // Start the application
+        init();
+    </script>
+</body>
+</html>
